@@ -1,4 +1,4 @@
 class Player:
-    def __init__(self, nom):
-        self.nom = nom
+    def __init__(self, name):
+        self.name = name
         self.time = 0

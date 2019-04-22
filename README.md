@@ -1,2 +1,1 @@
 # Checkers-Python
-# Checkers-Python
