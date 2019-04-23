@@ -34,15 +34,3 @@ class Square:
         self.checker = None
         self.color = "#000000" if (x + y) % 2 else "#FA6565"
         self.ui = ui
-
-    def setChecker(self, checker):
-        """
-            Represent a checker object
-
-            Arguments
-            ----------
-            checker : Checker
-                the checker on the square
-        """
-
-        self.checker = checker

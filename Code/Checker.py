@@ -1,4 +1,5 @@
-from State import State
+from State import *
+
 
 class Checker:
     """
@@ -45,3 +46,20 @@ class Checker:
         self.color = "#FFFFFF" if player == 1 else "#FF0000"
         self.ui = ui
         self.reachableSquares = []
+
+    def resetReachableSquares(self):
+        """
+            Reset the reachable squares attributes
+        """
+        self.reachableSquares = []
+
+    def addReachableSquare(self, square):
+        """
+            Add a reachable square
+
+            Parameters
+            ----------
+            square : Square
+                the square to add
+        """
+        self.reachableSquares.append(square)

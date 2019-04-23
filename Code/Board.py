@@ -1,11 +1,12 @@
-from Checker import Checker
-from Player import Player
-from Square import Square
-from State import State
+from Checker import *
+from Player import *
+from Square import *
+from State import *
+from View import *
 from tkinter import *
 
 
-class Board(Frame):
+class Board():
     """
         Principal class of the project. Handle the GUI and the game
 
@@ -28,7 +29,7 @@ class Board(Frame):
         turn : Player
             the player who is playing
         selectedChecker : Checker
-            the checker selected 
+            the checker selected
     """
 
     def __str__(self):
@@ -46,49 +47,29 @@ class Board(Frame):
             master: Tk
                 Window of the GUI
         """
-
-        Frame.__init__(self, master)
-        master.minsize(width=700, height=500)
-        self.grid()
-
+        self.view = View(master)
         self.length = 10
         self.squares = {}
         self.checkers = []
         self.players = [Player('white'), Player('black')]
         self.turn = self.players[1]
-        self.selectedPiece = None
-
-        self.initBoard()
+        self.selectedChecker = None
+        self.createSquares()
+        self.createCheckers()
+        for checker in self.checkers:
+            self.computeReachableSquares(checker)
+        self.view.canvas.bind("<Button-1>", self.handleCanvasClick)
 
     def createSquares(self):
         """
             Create the squares of the board
         """
-
         for x in range(self.length):
             for y in range(self.length):
                 self.squares[(x, y)] = Square(
-                    x, y, self.canvas.create_rectangle(x*50, y*50, (x+1)*50, (y+1)*50))
-                self.colorObject(self.squares[(x, y)])
-
-    def colorObject(self, obj):
-        """
-            Color an object
-
-            Arguments
-            ----------
-            obj : object
-                the object to color
-
-            Raises
-            ----------
-            AttributeError:
-                if the object doesn't have a "ui" or "color" attributes
-        """
-        if not(hasattr(obj, 'ui') and hasattr(obj, 'color')):
-            raise AttributeError(
-                'The obj ' + str(board) + ' should have a ui and color property')
-        self.canvas.itemconfigure(obj.ui, fill=obj.color)
+                    x, y, self.view.createSquare(x, y))
+                self.view.colorObject(
+                    self.squares[(x, y)].ui, self.squares[(x, y)].color)
 
     def createCheckers(self):
         """
@@ -105,26 +86,66 @@ class Board(Frame):
                 # Only some odd squares contain checkers
                 if((x + y) % 2):
                     checker = Checker(x, y, player,
-                                      self.canvas.create_oval(x*50 + 10, y*50 + 10, (x+1)*50 - 10, (y+1)*50 - 10))
+                                      self.view.createChecker(x, y))
                     self.players[player].checkerNb += 1
-                    self.colorObject(checker)
+                    self.view.colorObject(checker.ui, checker.color)
                     self.checkers.append(checker)
-                    self.squares[(x, y)].setChecker(checker)
+                    self.squares[(x, y)].checker = checker
 
-    def initBoard(self):
+    def computeReachableSquares(self, checker):
         """
-            Initialize the board
-        """
-        self.canvas = Canvas(self, width=500, height=500)
-        self.canvas.bind("<Button-1>", self.handleCanvasClick)
-        self.canvas.grid(row=0, column=0)
+            Compute all the reachable squares from a checker
 
-        self.createSquares()
-        self.createCheckers()
+            Parameters
+            ----------
+            checker: Checker
+                the checker to compute the reachable squares
+        """
+        checker.resetReachableSquares()
+        for x in range(checker.x - 1, checker.x + 2, 2):
+            for y in range(checker.y - 1, checker.y + 2, 2):
+                # Check if the coordinates are within the board
+                if x >= 0 and x <= 9 and y >= 0 and y <= 9:
+                    # if there is no checker on the square
+                    if self.squares[(x, y)].checker is None:
+                        checker.addReachableSquare(self.squares[(x, y)])
+                    # if the checker belongs to the other player
+                    elif self.squares[(x, y)].checker.player != self.turn:
+                        if x > checker.x and x + 1 <= 9:
+                            if y > checker.y and y + 1 <= 9 and self.squares[(x+1, y+1)].checker is None:
+                                checker.addReachableSquare(
+                                    self.squares[(x+1, y+1)])
+                            elif y < checker.y and y - 1 >= 0 and self.squares[(x+1, y-1)].checker is None:
+                                checker.addReachableSquare(
+                                    self.squares[(x+1, y-1)])
+                        elif x < checker.x and x - 1 >= 0:
+                            if y > checker.y and y + 1 <= 9 and self.squares[(x-1, y+1)].checker is None:
+                                checker.addReachableSquare(
+                                    self.squares[(x-1, y+1)])
+                            elif y < checker.y and y - 1 >= 0 and self.squares[(x-1, y-1)].checker is None:
+                                checker.addReachableSquare(
+                                    self.squares[(x-1, y-1)])
 
     def selectChecker(self, x, y):
-        checker = self.squares[(x, y)].checker
-        self.selectedChecker = checker
+        """
+            Select the checker given by its coordinates
+
+            Arguments
+            ----------
+            x : int
+                absciss
+            y: int
+                ordinate
+        """
+        if (x, y) not in self.squares:
+            raise KeyError(
+                'The key ' + str(x) + " " + str(y) + " is not in squares")
+        if(self.squares[(x,y)].checker is not None and self.players[self.squares[(x,y)].checker.player] is self.turn):
+                checker = self.squares[(x, y)].checker
+                if self.players[checker.player] == self.turn:
+                    self.selectedChecker = checker
+                    for square in self.selectedChecker.reachableSquares:
+                        print(square.x, square.y)
 
     def handleCanvasClick(self, event):
         """
@@ -137,16 +158,17 @@ class Board(Frame):
         """
         x = event.x // 50
         y = event.y // 50
-
         if self.selectedChecker is None:
             self.selectChecker(x, y)
-
         elif (x, y) in self.selectedChecker.reachableSquares:
             self.makeMove(x, y)
+        else:
+            self.resetColors()
+            self.selectChecker(x,y)
 
-    def reachableSquare(self):
-        return []
-
+    def resetColors(self):
+        return
+        
     def makeMove(self, x, y):
         return
 
