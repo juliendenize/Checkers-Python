@@ -9,8 +9,9 @@ class Square:
         y : int
             ordinate
         checker: @Checker
+            the checker hold by the square
         color : string
-            color of the checker
+            color of the square
         ui : int
             id of the checker for the board canvas
     """
@@ -32,12 +33,12 @@ class Square:
         self.y = y
         self.checker = None
         self.color = "#000000" if (x + y) % 2 else "#FA6565"
-        self.ui = ui    
-    
+        self.ui = ui
+
     def setChecker(self, checker):
         """
             Represent a checker object
-            
+
             Arguments
             ----------
             checker : Checker

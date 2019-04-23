@@ -18,6 +18,8 @@ class Checker:
             color of the checker
         ui : int
             id of the checker for the board canvas
+        reachableSquares : array(Squares)
+            the squares reachable from this checker
     """
 
     def __init__(self, x, y, player, ui):
@@ -42,3 +44,4 @@ class Checker:
         self.state = State.NORMAL
         self.color = "#FFFFFF" if player == 1 else "#FF0000"
         self.ui = ui
+        self.reachableSquares = []

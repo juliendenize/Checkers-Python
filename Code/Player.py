@@ -8,6 +8,8 @@ class Player:
             the name of the player
         time: Time
             the time the player played
+        checkerNb: int
+            the number of checkers alive
     """
 
     def __init__(self, name):
@@ -21,3 +23,4 @@ class Player:
         """
         self.name = name
         self.time = 0
+        self.checkerNb = 0
