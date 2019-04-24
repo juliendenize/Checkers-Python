@@ -92,6 +92,10 @@ class Board():
                     self.checkers.append(checker)
                     self.squares[(x, y)].checker = checker
 
+    def computeAllReachableSquares(self):
+        for checker in self.checkers:
+            self.computeReachableSquares(checker)
+
     def computeReachableSquares(self, checker):
         """
             Compute all the reachable squares from a checker
@@ -102,29 +106,32 @@ class Board():
                 the checker to compute the reachable squares
         """
         checker.resetReachableSquares()
-        for x in range(checker.x - 1, checker.x + 2, 2):
-            for y in range(checker.y - 1, checker.y + 2, 2):
-                # Check if the coordinates are within the board
-                if x >= 0 and x <= 9 and y >= 0 and y <= 9:
-                    # if there is no checker on the square
-                    if self.squares[(x, y)].checker is None:
-                        checker.addReachableSquare(self.squares[(x, y)])
-                    # if the checker belongs to the other player
-                    elif self.squares[(x, y)].checker.player != self.turn:
-                        if x > checker.x and x + 1 <= 9:
-                            if y > checker.y and y + 1 <= 9 and self.squares[(x+1, y+1)].checker is None:
-                                checker.addReachableSquare(
-                                    self.squares[(x+1, y+1)])
-                            elif y < checker.y and y - 1 >= 0 and self.squares[(x+1, y-1)].checker is None:
-                                checker.addReachableSquare(
-                                    self.squares[(x+1, y-1)])
-                        elif x < checker.x and x - 1 >= 0:
-                            if y > checker.y and y + 1 <= 9 and self.squares[(x-1, y+1)].checker is None:
-                                checker.addReachableSquare(
-                                    self.squares[(x-1, y+1)])
-                            elif y < checker.y and y - 1 >= 0 and self.squares[(x-1, y-1)].checker is None:
-                                checker.addReachableSquare(
-                                    self.squares[(x-1, y-1)])
+        if checker.state == State.NORMAL:
+            for x in range(checker.x - 1, checker.x + 2, 2):
+                for y in range(checker.y - 1, checker.y + 2, 2):
+                    # Check if the coordinates are within the board
+                    if x >= 0 and x <= 9 and y >= 0 and y <= 9:
+                        # if there is no checker on the square
+                        if self.squares[(x, y)].checker is None:
+                            checker.addReachableSquare(self.squares[(x, y)])
+                        # if the checker belongs to the other player
+                        elif self.players[self.squares[(x, y)].checker.player] != self.turn:
+                            if x > checker.x and x + 1 <= 9:
+                                if y > checker.y and y + 1 <= 9 and self.squares[(x+1, y+1)].checker is None:
+                                    checker.addReachableSquare(
+                                        self.squares[(x+1, y+1)])
+                                elif y < checker.y and y - 1 >= 0 and self.squares[(x+1, y-1)].checker is None:
+                                    checker.addReachableSquare(
+                                        self.squares[(x+1, y-1)])
+                            elif x < checker.x and x - 1 >= 0:
+                                if y > checker.y and y + 1 <= 9 and self.squares[(x-1, y+1)].checker is None:
+                                    checker.addReachableSquare(
+                                        self.squares[(x-1, y+1)])
+                                elif y < checker.y and y - 1 >= 0 and self.squares[(x-1, y-1)].checker is None:
+                                    checker.addReachableSquare(
+                                        self.squares[(x-1, y-1)])
+        elif checker.state == State.KING:
+            return
 
     def selectChecker(self, x, y):
         """
@@ -140,12 +147,12 @@ class Board():
         if (x, y) not in self.squares:
             raise KeyError(
                 'The key ' + str(x) + " " + str(y) + " is not in squares")
-        if(self.squares[(x,y)].checker is not None and self.players[self.squares[(x,y)].checker.player] is self.turn):
-                checker = self.squares[(x, y)].checker
-                if self.players[checker.player] == self.turn:
-                    self.selectedChecker = checker
-                    for square in self.selectedChecker.reachableSquares:
-                        print(square.x, square.y)
+        if(self.squares[(x, y)].checker is not None and self.players[self.squares[(x, y)].checker.player] is self.turn):
+            checker = self.squares[(x, y)].checker
+            if self.players[checker.player] == self.turn:
+                self.selectedChecker = checker
+                for square in self.selectedChecker.reachableSquares:
+                    self.view.colorObject(square.ui, "#0000FF")
 
     def handleCanvasClick(self, event):
         """
@@ -160,16 +167,31 @@ class Board():
         y = event.y // 50
         if self.selectedChecker is None:
             self.selectChecker(x, y)
-        elif (x, y) in self.selectedChecker.reachableSquares:
+        elif self.squares[(x, y)] in self.selectedChecker.reachableSquares:
             self.makeMove(x, y)
+            self.computeAllReachableSquares()
+            self.resetSelection()
         else:
-            self.resetColors()
-            self.selectChecker(x,y)
+            self.resetSelection()
+            self.selectChecker(x, y)
 
-    def resetColors(self):
-        return
-        
+    def resetSelection(self):
+        for square in self.selectedChecker.reachableSquares:
+            self.view.colorObject(square.ui, square.color)
+        self.selectedChecker = None
+
     def makeMove(self, x, y):
+        old_x, old_y = self.selectedChecker.x, self.selectedChecker.y
+        self.squares[(x,y)].checker = self.selectedChecker
+        self.squares[(old_x,old_y)].checker = None
+        self.selectedChecker.x, self.selectedChecker.y = x, y
+        self.view.moveChecker(self.selectedChecker.ui, x, y)
+        if self.selectedChecker.state == State.NORMAL:
+            # A checker has been killed
+            if abs(x-old_x) == 2 and abs(y-old_y) == 2:
+                return
+        elif self.selectedChecker.state == State.KING:
+            return
         return
 
 

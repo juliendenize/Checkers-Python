@@ -17,3 +17,6 @@ class View(Frame):
     
     def colorObject(self, item, color):
         self.canvas.itemconfigure(item, fill=color)
+
+    def moveChecker(self, item, x, y):
+        self.canvas.coords(item, x*50 + 10, y*50 + 10, (x+1)*50 - 10, (y+1)*50 - 10)
