@@ -20,3 +20,6 @@ class View(Frame):
 
     def moveChecker(self, item, x, y):
         self.canvas.coords(item, x*50 + 10, y*50 + 10, (x+1)*50 - 10, (y+1)*50 - 10)
+    
+    def killChecker(self, item):
+        self.canvas.delete(item)

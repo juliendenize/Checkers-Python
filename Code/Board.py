@@ -52,7 +52,7 @@ class Board():
         self.squares = {}
         self.checkers = []
         self.players = [Player('white'), Player('black')]
-        self.turn = 1
+        self.turn = self.players[1]
         self.selectedChecker = None
         self.createSquares()
         self.createCheckers()
@@ -85,7 +85,7 @@ class Board():
                     player = 1
                 # Only some odd squares contain checkers
                 if((x + y) % 2):
-                    checker = Checker(x, y, player,
+                    checker = Checker(x, y, self.players[player],
                                       self.view.createChecker(x, y))
                     self.players[player].checkerNb += 1
                     self.view.colorObject(checker.ui, checker.color)
@@ -111,13 +111,13 @@ class Board():
                 for y in range(checker.y - 1, checker.y + 2, 2):
                     # Check if the coordinates are within the board
                     if x >= 0 and x <= 9 and y >= 0 and y <= 9:
-                        if (0 == checker.player and y < checker.y) or (1 == checker.player and y > checker.y):
+                        if (self.players[0] is checker.player and y < checker.y) or (self.players[1] is checker.player and y > checker.y):
                             continue
                         # if there is no checker on the square
                         if self.squares[(x, y)].checker is None:
                             checker.addReachableSquare(self.squares[(x, y)])
                         # if the checker belongs to the other player
-                        elif self.squares[(x, y)].checker.player != checker.player:
+                        elif self.squares[(x, y)].checker.player is not checker.player:
                             if x > checker.x and x + 1 <= 9:
                                 if y > checker.y and y + 1 <= 9 and self.squares[(x+1, y+1)].checker is None:
                                     checker.addReachableSquare(
@@ -151,7 +151,7 @@ class Board():
                 'The key ' + str(x) + " " + str(y) + " is not in squares")
         if(self.squares[(x, y)].checker is not None and self.squares[(x, y)].checker.player is self.turn):
             checker = self.squares[(x, y)].checker
-            if checker.player == self.turn:
+            if checker.player is self.turn:
                 self.selectedChecker = checker
                 for square in self.selectedChecker.reachableSquares:
                     self.view.colorObject(square.ui, "#0000FF")
@@ -173,10 +173,13 @@ class Board():
             self.makeMove(x, y)
             self.resetSelection()
             self.computeAllReachableSquares()
-            self.turn = 0 if self.turn else 1
+            self.changeTurn()
         else:
             self.resetSelection()
             self.selectChecker(x, y)
+
+    def changeTurn(self):
+        self.turn = self.players[0] if self.turn is self.players[1] else self.players[1]
 
     def resetSelection(self):
         for square in self.selectedChecker.reachableSquares:
@@ -192,11 +195,23 @@ class Board():
         if self.selectedChecker.state == State.NORMAL:
             # A checker has been killed
             if abs(x-old_x) == 2 and abs(y-old_y) == 2:
-                return
+                if x < old_x and y < old_y:
+                    killed_x, killed_y = x+1, y+1
+                elif x < old_x and y > old_y:
+                    killed_x, killed_y = x+1, y-1
+                elif x > old_x and y < old_y:
+                    killed_x, killed_y = x-1, y+1
+                else:
+                    killed_x, killed_y = x-1, y-1
+                self.killChecker(self.squares[killed_x, killed_y].checker)
         elif self.selectedChecker.state == State.KING:
             return
         return
-
+    
+    def killChecker(self, checker):
+        self.squares[(checker.x, checker.y)].checker = None
+        checker.die()
+        self.view.killChecker(checker.ui)
 
 master = Tk()
 board = Board(master)

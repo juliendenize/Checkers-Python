@@ -43,7 +43,7 @@ class Checker:
         self.y = y
         self.player = player
         self.state = State.NORMAL
-        self.color = "#FFFFFF" if player == 1 else "#FF0000"
+        self.color = "#FFFFFF" if y > 5 else "#FF0000"
         self.ui = ui
         self.reachableSquares = []
 
@@ -63,3 +63,7 @@ class Checker:
                 the square to add
         """
         self.reachableSquares.append(square)
+    
+    def die(self):
+        self.state = State.DEAD
+        self.player.checkerNb -= 1
