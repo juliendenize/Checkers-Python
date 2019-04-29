@@ -12,7 +12,7 @@ class Player:
             the number of checkers alive
     """
 
-    def __init__(self, name):
+    def __init__(self, name, id):
         """
             Construct the player object
 
@@ -24,3 +24,5 @@ class Player:
         self.name = name
         self.time = 0
         self.checkerNb = 0
+        self.mustAttack = 0
+        self.id = id

@@ -43,9 +43,10 @@ class Checker:
         self.y = y
         self.player = player
         self.state = State.NORMAL
-        self.color = "#FFFFFF" if y > 5 else "#FF0000"
+        self.color = "#FFFFFF" if self.player.id == 1 else "#FF0000"
         self.ui = ui
         self.reachableSquares = []
+        self.jumps = []
 
     def resetReachableSquares(self):
         """
@@ -64,6 +65,25 @@ class Checker:
         """
         self.reachableSquares.append(square)
     
+    def resetJumps(self):
+        """
+            Reset the reachable squares attributes
+        """
+        self.jumps = []
+
+    def addJump(self, square):
+        """
+            Add a reachable square
+
+            Parameters
+            ----------
+            square : Square
+                the square to add
+        """
+        self.jumps.append(square)
+        self.player.mustAttack = 1
+    
     def die(self):
         self.state = State.DEAD
         self.player.checkerNb -= 1
+
