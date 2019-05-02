@@ -23,6 +23,8 @@ class Player:
         """
         self.name = name
         self.time = 0
+        self.id = id
         self.checkerNb = 0
         self.mustAttack = 0
-        self.id = id
+        self.lastNormalPieceMovedMoves = 0
+        self.lastPieceKilledMoves = 0
