@@ -1,5 +1,4 @@
-from State import *
-
+from State import State
 
 class Checker:
     """
@@ -84,6 +83,9 @@ class Checker:
         self.player.mustAttack = 1
     
     def die(self):
+        """
+            Kill this checker
+        """
         self.state = State.DEAD
         self.player.checkerNb -= 1
 

@@ -1,10 +1,9 @@
-from Checker import *
-from Player import *
-from Square import *
-from State import *
-from View import *
-from tkinter import *
-
+from tkinter import Tk
+from Checker import Checker
+from Square import Square
+from Player import Player
+from State import State
+from View import View
 
 class Board():
     """
@@ -30,6 +29,8 @@ class Board():
             the player who is playing
         selectedChecker : Checker
             the checker selected
+        encodedBoards: array(String)
+            each turn encoded in String
     """
 
     def __str__(self):
@@ -56,12 +57,18 @@ class Board():
         self.selectedChecker = None
         self.createSquares()
         self.createCheckers()
-        for checker in self.checkers:
-            self.computeReachableSquares(checker)
+        self.computeAllMoves()
         self.view.canvas.bind("<Button-1>", self.handleCanvasClick)
         self.encodedBoards = [self.encodeBoard()]
     
     def encodeBoard(self):
+        """
+            Encode the current board in String format
+
+            Return
+            ----------
+            String: the board encoded
+        """
         code = ""
         for x in range(self.length):
             for y in range(self.length):
@@ -113,15 +120,18 @@ class Board():
                     self.checkers.append(checker)
                     self.squares[(x, y)].checker = checker
 
-    def computeAllReachableSquares(self):
+    def computeAllMoves(self):
+        """
+            Compute all the moves possible
+        """
         self.players[0].mustAttack = 0
         self.players[1].mustAttack = 0
         for checker in self.checkers:
-            self.computeReachableSquares(checker)
+            self.computeMoves(checker)
 
-    def computeReachableSquares(self, checker):
+    def computeMoves(self, checker):
         """
-            Compute all the reachable squares from a checker
+            Compute all moves from a checker
 
             Parameters
             ----------
@@ -180,10 +190,16 @@ class Board():
                     self.selectViewReachableChecker(checker)
 
     def selectViewReachableChecker(self, checker):
+        """
+            Color the view selection of reachable adjacent squares (color in blue)
+        """
         for square in self.selectedChecker.reachableSquares:
             self.view.colorObject(square.ui, "#0000FF")
 
     def selectViewJumpChecker(self, checker):
+        """
+            Color the view selection of jumps (color in blue)
+        """
         for square in self.selectedChecker.jumps:
             self.view.colorObject(square.ui, "#0000FF")
 
@@ -198,34 +214,13 @@ class Board():
         """
         x = event.x // 80
         y = event.y // 80
-        self.makeAction(x,y)
-    
-    def makeAction(self, x, y):
         if self.selectedChecker is None:
             self.selectChecker(x, y)
         elif self.squares[(x, y)] in self.selectedChecker.jumps:
-            self.makeMove(x, y, True)
-            self.resetViewSelection()
-            # If the checker didn't become a king
-            if self.turn.mustAttack:
-                self.computeReachableSquares(self.selectedChecker)
-                if self.selectedChecker.jumps:
-                    self.turn.mustAttack = 2
-                    self.selectViewJumpChecker(self.selectedChecker)
-                else:
-                    self.selectedChecker = None
-                    self.computeAllReachableSquares()
-                    self.changeTurn()
-            else:
-                self.selectedChecker = None
-                self.computeAllReachableSquares()
-                self.changeTurn()
+            self.jump(x, y)
         elif self.squares[(x, y)] in self.selectedChecker.reachableSquares:
             if not self.turn.mustAttack:
-                self.makeMove(x, y, False)
-                self.resetSelection()
-                self.computeAllReachableSquares()
-                self.changeTurn()
+                self.simpleMove(x, y)
             else:
                 return
         elif self.turn.mustAttack == 2:
@@ -233,8 +228,70 @@ class Board():
         else:
             self.resetSelection()
             self.selectChecker(x, y)
+        
+    def jump(self, x, y):
+        """
+            Make the jump of a checker
+
+            Arguments
+            ----------
+            x: int
+                The absiss position to jump
+            y: int
+                The ordinate position to jump
+        """
+        
+        # kill the checker jumped
+        if x < self.selectedChecker.x and y < self.selectedChecker.y:
+            killed_x, killed_y = x+1, y+1
+        elif x < self.selectedChecker.x and y > self.selectedChecker.y:
+            killed_x, killed_y = x+1, y-1
+        elif x > self.selectedChecker.x and y < self.selectedChecker.y:
+            killed_x, killed_y = x-1, y+1
+        else:
+            killed_x, killed_y = x-1, y-1
+        self.killChecker(self.squares[killed_x, killed_y].checker)
+        self.turn.lastJumpMoves = 0
+            
+        self.makeMove(x, y)
+        self.resetViewSelection()
+        # If the checker didn't become a king
+        if self.turn.mustAttack:
+            self.computeMoves(self.selectedChecker)
+            if self.selectedChecker.jumps:
+                self.turn.mustAttack = 2
+                self.selectViewJumpChecker(self.selectedChecker)
+            else:
+                self.selectedChecker = None
+                self.computeAllMoves()
+                self.changeTurn()
+        # Else the turn must change
+        else:
+            self.selectedChecker = None
+            self.computeAllMoves()
+            self.changeTurn()
+    
+    def simpleMove(self, x, y):
+        """
+            Move the checker to an ajdacent position
+
+            Arguments
+            ----------
+            x: int
+                The absiss position to move
+            y: int
+                The ordinate position to move
+        """
+        self.turn.lastJumpMoves +=1
+        self.makeMove(x, y)
+        self.resetSelection()
+        self.computeAllMoves()
+        self.changeTurn()
 
     def changeTurn(self):
+        """
+            Change the player turn
+        """
         self.turn.time += 1
         old_turn = self.turn
         self.turn = self.players[0] if self.turn is self.players[1] else self.players[1]
@@ -243,61 +300,90 @@ class Board():
         if not self.turn.checkerNb or self.turn.mustAttack == -1:
             self.win(old_turn)
         else:
-            if len([i for i, x in enumerate(self.encodedBoards) if x == encodedBoard]) > 2:
-                self.draw(0)
-            elif old_turn.lastNormalPieceMovedMoves >= 40 and self.turn.lastNormalPieceMovedMoves >= 40 and old_turn.lastPieceKilledMoves and self.turn.lastPieceKilledMoves >= 40:
-                self.draw(1)
+            if len([i for i, code in enumerate(self.encodedBoards) if code == encodedBoard]) > 2:
+                self.draw(False)
+            elif old_turn.lastNormalPieceMovedMoves >= 40 and self.turn.lastNormalPieceMovedMoves >= 40 and old_turn.lastJumpMoves and self.turn.lastJumpMoves >= 40:
+                self.draw(True)
             
 
     def win(self, player):
+        """
+            Declare the player winner
+
+            Arguments
+            ----------
+            player: Player
+                The winner
+        """
         print("win", player.id)
     
     def draw(self, reason):
+        """
+            Declare it is a draw
+
+            Arguments
+            ----------
+            reason: boolean
+                The reason why it is a draw: 0 if the board was the same 3 times, 1 if no piece were killed or normal piece was moved for 40 round for each player
+        """
         print("draw", reason)
 
     def resetSelection(self):
+        """
+            Reset the selection of a piece
+        """
         self.resetViewSelection()
         self.selectedChecker = None
 
     def resetViewSelection(self):
+        """
+            Reset the view selection (blue squares back to normal)
+        """
         for square in self.selectedChecker.reachableSquares:
             self.view.colorObject(square.ui, square.color)
         for square in self.selectedChecker.jumps:
             self.view.colorObject(square.ui, square.color)
 
-    def makeMove(self, x, y, checkerKilled):
+    def makeMove(self, x, y):
+        """
+            Move the selected checker to a new position
+
+            Arguments
+            ----------
+            x: int
+                The absiss position
+            y: int
+                The ordinate position
+        """
         old_x, old_y = self.selectedChecker.x, self.selectedChecker.y
         self.selectedChecker.x, self.selectedChecker.y = x, y
         self.squares[(x, y)].checker = self.selectedChecker
         self.squares[(old_x, old_y)].checker = None
         self.view.moveChecker(self.selectedChecker.ui, x, y)
-        # A checker has been killed
-        if checkerKilled:
-            if x < old_x and y < old_y:
-                killed_x, killed_y = x+1, y+1
-            elif x < old_x and y > old_y:
-                killed_x, killed_y = x+1, y-1
-            elif x > old_x and y < old_y:
-                killed_x, killed_y = x-1, y+1
-            else:
-                killed_x, killed_y = x-1, y-1
-            self.killChecker(self.squares[killed_x, killed_y].checker)
-            self.turn.lastPieceKilledMoves = 0
-        else:
-            self.turn.lastPieceKilledMoves +=1
         self.turn.lastNormalPieceMovedMoves = 0 if self.selectedChecker.state is State.NORMAL else self.turn.lastNormalPieceMovedMoves + 1
         if y == 0 and self.turn is self.players[1] or y == self.length-1 and self.turn is self.players[0]:
-            self.changeIntoKing(self.selectedChecker)
+            self.changeIntoKing()
             # When a piece becomes a king, the player can't play again
             self.turn.mustAttack = 0
 
-    def changeIntoKing(self, checker):
-        checker.state = State.KING
+    def changeIntoKing(self):
+        """
+            Change into a king the selected checker
+        """
+        self.selectedChecker.state = State.KING
         new_ui = self.view.changeIntoKing(
-            checker.ui, checker.x, checker.y, checker.color)
-        checker.ui = new_ui
+            self.selectedChecker.ui, self.selectedChecker.x, self.selectedChecker.y, self.selectedChecker.color)
+        self.selectedChecker.ui = new_ui
 
     def killChecker(self, checker):
+        """
+            Kill the checker given
+
+            Arguments
+            ----------
+            checker: Checker
+                The checker to kill
+        """
         self.squares[(checker.x, checker.y)].checker = None
         checker.die()
         self.view.killChecker(checker.ui)
