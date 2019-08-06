@@ -1,8 +1,5 @@
 from tkinter import Tk
-from Checker import Checker
-from Square import Square
-from Player import Player
-from State import State
+from Classes import Square, Checker, State, Player
 from View import View
 
 class Board():
@@ -48,6 +45,9 @@ class Board():
             master: Tk
                 Window of the GUI
         """
+
+        assert isinstance(master, Tk), "'master' must be an instance of Tk"
+
         self.view = View(master)
         self.length = 8
         self.squares = {}
@@ -138,6 +138,9 @@ class Board():
             checker: Checker
                 the checker to compute the reachable squares
         """
+
+        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+
         if checker.state is State.DEAD:
             return
 
@@ -177,6 +180,10 @@ class Board():
             y: int
                 ordinate
         """
+
+        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+
         if (x, y) not in self.squares:
             raise KeyError(
                 'The key ' + str(x) + " " + str(y) + " is not in squares")
@@ -193,6 +200,9 @@ class Board():
         """
             Color the view selection of reachable adjacent squares (color in blue)
         """
+
+        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+ 
         for square in self.selectedChecker.reachableSquares:
             self.view.colorObject(square.ui, "#0000FF")
 
@@ -200,6 +210,9 @@ class Board():
         """
             Color the view selection of jumps (color in blue)
         """
+
+        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+
         for square in self.selectedChecker.jumps:
             self.view.colorObject(square.ui, "#0000FF")
 
@@ -241,6 +254,9 @@ class Board():
                 The ordinate position to jump
         """
         
+        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+
         # kill the checker jumped
         if x < self.selectedChecker.x and y < self.selectedChecker.y:
             killed_x, killed_y = x+1, y+1
@@ -282,6 +298,10 @@ class Board():
             y: int
                 The ordinate position to move
         """
+
+        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+
         self.turn.lastJumpMoves +=1
         self.makeMove(x, y)
         self.resetSelection()
@@ -315,6 +335,9 @@ class Board():
             player: Player
                 The winner
         """
+
+        assert isinstance(player, Player), "'player' must be an instance of Player"
+
         print("win", player.id)
     
     def draw(self, reason):
@@ -326,6 +349,8 @@ class Board():
             reason: boolean
                 The reason why it is a draw: 0 if the board was the same 3 times, 1 if no piece were killed or normal piece was moved for 40 round for each player
         """
+        assert type(reason) is bool, "'reason' must be a boolean."
+
         print("draw", reason)
 
     def resetSelection(self):
@@ -355,6 +380,10 @@ class Board():
             y: int
                 The ordinate position
         """
+
+        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+
         old_x, old_y = self.selectedChecker.x, self.selectedChecker.y
         self.selectedChecker.x, self.selectedChecker.y = x, y
         self.squares[(x, y)].checker = self.selectedChecker
@@ -384,11 +413,14 @@ class Board():
             checker: Checker
                 The checker to kill
         """
+
+        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+
         self.squares[(checker.x, checker.y)].checker = None
         checker.die()
         self.view.killChecker(checker.ui)
 
-
-master = Tk()
-board = Board(master)
-master.mainloop()
+if __name__ == "__main__":
+    master = Tk()
+    board = Board(master)
+    master.mainloop()
