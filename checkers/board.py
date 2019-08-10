@@ -1,6 +1,7 @@
 from tkinter import Tk
-from Classes import Square, Checker, State, Player
-from View import View
+from checkers.classes import Square, Checker, State, Player
+from checkers.view import View
+
 
 class Board():
     """
@@ -60,7 +61,7 @@ class Board():
         self.computeAllMoves()
         self.view.canvas.bind("<Button-1>", self.handleCanvasClick)
         self.encodedBoards = [self.encodeBoard()]
-    
+
     def encodeBoard(self):
         """
             Encode the current board in String format
@@ -72,8 +73,8 @@ class Board():
         code = ""
         for x in range(self.length):
             for y in range(self.length):
-                if self.squares[(x,y)].checker:
-                    checker = self.squares[(x,y)].checker
+                if self.squares[(x, y)].checker:
+                    checker = self.squares[(x, y)].checker
                     if checker.player is self.players[0]:
                         if checker.state is State.NORMAL:
                             code += "B"
@@ -139,7 +140,8 @@ class Board():
                 the checker to compute the reachable squares
         """
 
-        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+        assert isinstance(
+            checker, Checker), "'checker' must be an instance of Checker"
 
         if checker.state is State.DEAD:
             return
@@ -181,8 +183,10 @@ class Board():
                 ordinate
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
         if (x, y) not in self.squares:
             raise KeyError(
@@ -201,8 +205,9 @@ class Board():
             Color the view selection of reachable adjacent squares (color in blue)
         """
 
-        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
- 
+        assert isinstance(
+            checker, Checker), "'checker' must be an instance of Checker"
+
         for square in self.selectedChecker.reachableSquares:
             self.view.colorObject(square.ui, "#0000FF")
 
@@ -211,7 +216,8 @@ class Board():
             Color the view selection of jumps (color in blue)
         """
 
-        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+        assert isinstance(
+            checker, Checker), "'checker' must be an instance of Checker"
 
         for square in self.selectedChecker.jumps:
             self.view.colorObject(square.ui, "#0000FF")
@@ -241,7 +247,7 @@ class Board():
         else:
             self.resetSelection()
             self.selectChecker(x, y)
-        
+
     def jump(self, x, y):
         """
             Make the jump of a checker
@@ -253,9 +259,11 @@ class Board():
             y: int
                 The ordinate position to jump
         """
-        
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
         # kill the checker jumped
         if x < self.selectedChecker.x and y < self.selectedChecker.y:
@@ -268,7 +276,7 @@ class Board():
             killed_x, killed_y = x-1, y-1
         self.killChecker(self.squares[killed_x, killed_y].checker)
         self.turn.lastJumpMoves = 0
-            
+
         self.makeMove(x, y)
         self.resetViewSelection()
         # If the checker didn't become a king
@@ -286,7 +294,7 @@ class Board():
             self.selectedChecker = None
             self.computeAllMoves()
             self.changeTurn()
-    
+
     def simpleMove(self, x, y):
         """
             Move the checker to an ajdacent position
@@ -299,10 +307,12 @@ class Board():
                 The ordinate position to move
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
-        self.turn.lastJumpMoves +=1
+        self.turn.lastJumpMoves += 1
         self.makeMove(x, y)
         self.resetSelection()
         self.computeAllMoves()
@@ -324,7 +334,6 @@ class Board():
                 self.draw(False)
             elif old_turn.lastNormalPieceMovedMoves >= 40 and self.turn.lastNormalPieceMovedMoves >= 40 and old_turn.lastJumpMoves and self.turn.lastJumpMoves >= 40:
                 self.draw(True)
-            
 
     def win(self, player):
         """
@@ -336,10 +345,11 @@ class Board():
                 The winner
         """
 
-        assert isinstance(player, Player), "'player' must be an instance of Player"
+        assert isinstance(
+            player, Player), "'player' must be an instance of Player"
 
         print("win", player.id)
-    
+
     def draw(self, reason):
         """
             Declare it is a draw
@@ -381,8 +391,10 @@ class Board():
                 The ordinate position
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
         old_x, old_y = self.selectedChecker.x, self.selectedChecker.y
         self.selectedChecker.x, self.selectedChecker.y = x, y
@@ -414,13 +426,9 @@ class Board():
                 The checker to kill
         """
 
-        assert isinstance(checker, Checker), "'checker' must be an instance of Checker"
+        assert isinstance(
+            checker, Checker), "'checker' must be an instance of Checker"
 
         self.squares[(checker.x, checker.y)].checker = None
         checker.die()
         self.view.killChecker(checker.ui)
-
-if __name__ == "__main__":
-    master = Tk()
-    board = Board(master)
-    master.mainloop()

@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Square:
     """
         Represent a checker object
@@ -167,6 +168,7 @@ class State(Enum):
     KING = 2
     DEAD = 3
 
+
 class Player:
     """
         Represent a player object
@@ -202,7 +204,7 @@ class Player:
         """
 
         assert type(name) is str, "'name' must be a string"
-        assert type(id) is int, "'id' must be an integer" 
+        assert type(id) is int, "'id' must be an integer"
 
         self.name = name
         self.time = 0

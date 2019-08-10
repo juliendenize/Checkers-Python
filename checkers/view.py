@@ -1,5 +1,6 @@
 from tkinter import Canvas, Frame, Tk
 
+
 class View(Frame):
     """
         Represent the GUI
@@ -17,6 +18,7 @@ class View(Frame):
         offsetPiece: int
             the offset of a piece in a square
     """
+
     def __init__(self, master):
         """
             Construct the view object
@@ -47,17 +49,19 @@ class View(Frame):
                 the absiss of the checker
             y: int
                 the ordinate of the checker
-            
+
             Return
             ----------
             int: the id of the checker in the canvas
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
         return self.canvas.create_oval(x*self.sizeSquare + self.offsetPiece, y*self.sizeSquare + self.offsetPiece, (x+1)*self.sizeSquare - self.offsetPiece, (y+1)*self.sizeSquare - self.offsetPiece)
-    
+
     def createSquare(self, x, y):
         """
             Create the GUI of a square
@@ -68,17 +72,19 @@ class View(Frame):
                 the absiss of the square
             y: int
                 the ordinate of the square
-            
+
             Return
             ----------
             int: the id of the checker in the canvas
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
         return self.canvas.create_rectangle(x*self.sizeSquare, y*self.sizeSquare, (x+1)*self.sizeSquare, (y+1)*self.sizeSquare)
-    
+
     def colorObject(self, item, color):
         """
             Color an object
@@ -110,11 +116,14 @@ class View(Frame):
                 the ordinate of the square
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
 
-        self.canvas.coords(item, x*self.sizeSquare + self.offsetPiece, y*self.sizeSquare + self.offsetPiece, (x+1)*self.sizeSquare - self.offsetPiece, (y+1)*self.sizeSquare - self.offsetPiece)
-    
+        self.canvas.coords(item, x*self.sizeSquare + self.offsetPiece, y*self.sizeSquare + self.offsetPiece,
+                           (x+1)*self.sizeSquare - self.offsetPiece, (y+1)*self.sizeSquare - self.offsetPiece)
+
     def killChecker(self, item):
         """
             Kill a checker
@@ -128,7 +137,7 @@ class View(Frame):
         assert type(item) is int, "'item' must be an integer"
 
         self.canvas.delete(item)
-    
+
     def changeIntoKing(self, item, x, y, color):
         """
             Change a checker in a king
@@ -143,18 +152,21 @@ class View(Frame):
                 the ordinate of the square
             color: str
                 the color of the square
-            
+
             Return
             ----------
             int: the new id of the checker changed in the canvas
         """
 
-        assert type(x) is int and x >= 0, "'x' must be an integer greater than 0"
-        assert type(y) is int and y >= 0, "'y' must be an integer greater than 0"
+        assert type(
+            x) is int and x >= 0, "'x' must be an integer greater than 0"
+        assert type(
+            y) is int and y >= 0, "'y' must be an integer greater than 0"
         assert type(item) is int, "'item' must be an integer"
         assert type(color) is str, "'color' must be a string"
 
         self.canvas.delete(item)
-        new_item = self.canvas.create_rectangle(x*self.sizeSquare + self.offsetPiece, y*self.sizeSquare + self.offsetPiece, (x+1)*self.sizeSquare - self.offsetPiece, (y+1)*self.sizeSquare - self.offsetPiece)
+        new_item = self.canvas.create_rectangle(x*self.sizeSquare + self.offsetPiece, y*self.sizeSquare +
+                                                self.offsetPiece, (x+1)*self.sizeSquare - self.offsetPiece, (y+1)*self.sizeSquare - self.offsetPiece)
         self.colorObject(new_item, color)
         return new_item
