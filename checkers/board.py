@@ -1,6 +1,6 @@
-from tkinter import Tk
-from checkers.classes import Square, Checker, State, Player
-from checkers.view import View
+from classes import Square, Checker, State, Player
+from view import BoardView
+import top_controller
 
 
 class Board():
@@ -13,8 +13,8 @@ class Board():
 
         Attributes
         ----------
-        canvas : Canvas
-            the Canvas that hold the squares and checkers in the UI
+        view : BoardView
+            the frame that holds the UI of the game (board + scores)
         length : int
             the length of the board (10)
         squares : dict(Square)
@@ -37,7 +37,7 @@ class Board():
         """
         return "Board"
 
-    def __init__(self, master):
+    def __init__(self, controller):
         """
             Construct the board object
 
@@ -46,20 +46,22 @@ class Board():
             master: Tk
                 Window of the GUI
         """
+        assert isinstance(controller, top_controller.Controller), "'controller' must be an instance of Controller"
+        self.controller = controller
+        self.view = BoardView(self.controller.master)
+        self.view.board.bind("<Button-1>", self.handleCanvasClick)
 
-        assert isinstance(master, Tk), "'master' must be an instance of Tk"
-
-        self.view = View(master)
         self.length = 8
         self.squares = {}
         self.checkers = []
         self.players = [Player('black', 0), Player('white', 1)]
         self.turn = self.players[1]
         self.selectedChecker = None
+        
         self.createSquares()
         self.createCheckers()
         self.computeAllMoves()
-        self.view.canvas.bind("<Button-1>", self.handleCanvasClick)
+        
         self.encodedBoards = [self.encodeBoard()]
 
     def encodeBoard(self):
@@ -86,7 +88,7 @@ class Board():
                         elif checker.state is State.KING:
                             code += "Q"
                 else:
-                    code += "O"
+                    code += "x"
         return code
 
     def createSquares(self):
@@ -279,6 +281,7 @@ class Board():
 
         self.makeMove(x, y)
         self.resetViewSelection()
+        self.updateViewScores()
         # If the checker didn't become a king
         if self.turn.mustAttack:
             self.computeMoves(self.selectedChecker)
@@ -432,3 +435,6 @@ class Board():
         self.squares[(checker.x, checker.y)].checker = None
         checker.die()
         self.view.killChecker(checker.ui)
+
+    def updateViewScores(self):
+        self.view.updateScores(self.players[1].checkerNb, self.players[0].checkerNb)

@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class Square:
     """
         Represent a checker object
@@ -184,7 +183,10 @@ class Player:
         checkerNb: int
             the number of checkers alive
         mustAttack: int
-            -1 if the player can't move, 0 if the player can't jump, 1 if he can jump, 2 if he can jump and already jumped
+            - -1 if the player can't move
+            - 0 if the player can't jump
+            - 1 if he can jump
+            - 2 if he can jump and already jumped
         lastNormalPieceMovedMoves: int
             number of moves since the player didn't move a normal piece
         lastJumpMoves: int

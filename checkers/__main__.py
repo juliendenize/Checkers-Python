@@ -1,7 +1,8 @@
 from tkinter import Tk
-from checkers.board import Board
+from top_controller import Controller
 
 if __name__ == "__main__":
     master = Tk()
-    board = Board(master)
+    master.minsize(width=800, height=640)
+    Controller(master).displayFirstMenu()
     master.mainloop()
