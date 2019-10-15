@@ -46,11 +46,9 @@ class Board():
             master: Tk
                 Window of the GUI
         """
-        assert isinstance(controller, top_controller.Controller), "'controller' must be an instance of Controller"
-        self.controller = controller
-        self.view = BoardView(self.controller.master)
-        self.view.board.bind("<Button-1>", self.handleCanvasClick)
 
+        assert controller is not None, "'controller' must not be None"
+        self.controller = controller
         self.length = 8
         self.squares = {}
         self.checkers = []
@@ -58,9 +56,17 @@ class Board():
         self.turn = self.players[1]
         self.selectedChecker = None
         
+        if isinstance(controller, top_controller.Controller):
+            self.view = BoardView(self.controller.master)
+            self.view.board.bind("<Button-1>", self.handleCanvasClick)
+        
+        else:
+            # it means the AI is using the board as an environment and doesnt require a view. This variable helps to construct the board without actually displaying a UI.
+            self.view = None
+
         self.createSquares()
         self.createCheckers()
-        self.computeAllMoves()
+        self.computeAllHumanMoves()
         
         self.encodedBoards = [self.encodeBoard()]
 
@@ -97,10 +103,13 @@ class Board():
         """
         for x in range(self.length):
             for y in range(self.length):
-                self.squares[(x, y)] = Square(
-                    x, y, self.view.createSquare(x, y))
-                self.view.colorObject(
-                    self.squares[(x, y)].ui, self.squares[(x, y)].color)
+                if self.view is not None:
+                    self.squares[(x, y)] = Square(
+                        x, y, self.view.createSquare(x, y))
+                    self.view.colorObject(
+                        self.squares[(x, y)].ui, self.squares[(x, y)].color)
+                else:
+                    self.squares[(x, y)] = Square(x, y, None)
 
     def createCheckers(self):
         """
@@ -116,23 +125,29 @@ class Board():
                     player = 1
                 # Only some odd squares contain checkers
                 if((x + y) % 2):
-                    checker = Checker(x, y, self.players[player],
-                                      self.view.createChecker(x, y))
                     self.players[player].checkerNb += 1
-                    self.view.colorObject(checker.ui, checker.color)
+                    if self.view is not None:
+                        checker = Checker(x, y, self.players[player],
+                                        self.view.createChecker(x, y))
+                        self.view.colorObject(checker.ui, checker.color)
+                    else:
+                        checker = Checker(x, y, self.players[player], None)
                     self.checkers.append(checker)
                     self.squares[(x, y)].checker = checker
 
-    def computeAllMoves(self):
+    def computeActions():
+        pass
+
+    def computeAllHumanMoves(self):
         """
             Compute all the moves possible
         """
         self.players[0].mustAttack = 0
         self.players[1].mustAttack = 0
         for checker in self.checkers:
-            self.computeMoves(checker)
+            self.computeHumanMoves(checker)
 
-    def computeMoves(self, checker):
+    def computeHumanMoves(self, checker):
         """
             Compute all moves from a checker
 
@@ -284,18 +299,18 @@ class Board():
         self.updateViewScores()
         # If the checker didn't become a king
         if self.turn.mustAttack:
-            self.computeMoves(self.selectedChecker)
+            self.computeHumanMoves(self.selectedChecker)
             if self.selectedChecker.jumps:
                 self.turn.mustAttack = 2
                 self.selectViewJumpChecker(self.selectedChecker)
             else:
                 self.selectedChecker = None
-                self.computeAllMoves()
+                self.computeAllHumanMoves()
                 self.changeTurn()
         # Else the turn must change
         else:
             self.selectedChecker = None
-            self.computeAllMoves()
+            self.computeAllHumanMoves()
             self.changeTurn()
 
     def simpleMove(self, x, y):
@@ -318,7 +333,7 @@ class Board():
         self.turn.lastJumpMoves += 1
         self.makeMove(x, y)
         self.resetSelection()
-        self.computeAllMoves()
+        self.computeAllHumanMoves()
         self.changeTurn()
 
     def changeTurn(self):
