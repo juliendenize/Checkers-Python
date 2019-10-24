@@ -6,11 +6,12 @@ class Controller():
     def __init__(self, master):
         assert isinstance(master, Tk), "'master' must be an instance of Tk"
         self.master = master
+        self.board = None
     
-    def displayFirstMenu(self):
+    def display_first_menu(self):
         FirstMenu(self)
 
-    def startGame(self, type):
+    def start_game(self, type):
         """
             Start the game by calling the board and then let the board taking care of the game(s).
         """

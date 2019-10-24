@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Square:
     """
         Represent a checker object
@@ -61,7 +62,7 @@ class Checker:
             color of the checker
         ui : int
             id of the checker for the board canvas
-        reachableSquares : array(Squares)
+        reachable_squares : array(Squares)
             the squares reachable from this checker
     """
 
@@ -94,16 +95,16 @@ class Checker:
         self.state = State.NORMAL
         self.color = "#FFFFFF" if self.player.id == 1 else "#FF0000"
         self.ui = ui
-        self.reachableSquares = []
+        self.reachable_squares = []
         self.jumps = []
 
-    def resetReachableSquares(self):
+    def reset_reachable_squares(self):
         """
             Reset the reachable squares attributes
         """
-        self.reachableSquares = []
+        self.reachable_squares = []
 
-    def addReachableSquare(self, square):
+    def add_reachable_square(self, square):
         """
             Add a reachable square
 
@@ -115,15 +116,15 @@ class Checker:
 
         assert isinstance(square, Square), "'square' must be a Square"
 
-        self.reachableSquares.append(square)
+        self.reachable_squares.append(square)
 
-    def resetJumps(self):
+    def reset_jumps(self):
         """
             Reset the reachable squares attributes
         """
         self.jumps = []
 
-    def addJump(self, square):
+    def add_jump(self, square):
         """
             Add a reachable square
 
@@ -136,14 +137,14 @@ class Checker:
         assert isinstance(square, Square), "'square' must be a Square"
 
         self.jumps.append(square)
-        self.player.mustAttack = 1
+        self.player.must_attack = 1
 
     def die(self):
         """
             Kill this checker
         """
         self.state = State.DEAD
-        self.player.checkerNb -= 1
+        self.player.checker_nb -= 1
 
 
 class State(Enum):
@@ -180,16 +181,16 @@ class Player:
                 the id of the player (0 or 1)
         time: Time
             the time the player played
-        checkerNb: int
+        checker_nb: int
             the number of checkers alive
-        mustAttack: int
+        must_attack: int
             - -1 if the player can't move
             - 0 if the player can't jump
             - 1 if he can jump
             - 2 if he can jump and already jumped
-        lastNormalPieceMovedMoves: int
+        last_normal_piece_moved_moves: int
             number of moves since the player didn't move a normal piece
-        lastJumpMoves: int
+        last_jump_moves: int
             number of moves since the player didn't jump
     """
 
@@ -211,7 +212,7 @@ class Player:
         self.name = name
         self.time = 0
         self.id = id
-        self.checkerNb = 0
-        self.mustAttack = 0
-        self.lastNormalPieceMovedMoves = 0
-        self.lastJumpMoves = 0
+        self.checker_nb = 0
+        self.must_attack = 0
+        self.last_normal_piece_moved_moves = 0
+        self.last_jump_moves = 0
