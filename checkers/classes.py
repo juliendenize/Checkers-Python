@@ -8,7 +8,7 @@ class Square:
         Attributes
         ----------
         x : int
-             Absciss
+             Abscissa
         y : int
             ordinate
         checker: @Checker
@@ -19,7 +19,7 @@ class Square:
             id of the checker for the board canvas
     """
 
-    def __init__(self, x, y, ui):
+    def __init__(self, x, y):
         """
             Construct the Square object
 
@@ -35,13 +35,12 @@ class Square:
 
         assert type(x) is int, "'x' must be an integer"
         assert type(y) is int, "'y' must be an integer"
-        assert type(ui) is int, "'ui' must be an integer"
 
         self.x = x
         self.y = y
         self.checker = None
         self.color = "#000000" if (x + y) % 2 else "#FA6565"
-        self.ui = ui
+        self.ui = None
 
 
 class Checker:
@@ -66,7 +65,7 @@ class Checker:
             the squares reachable from this checker
     """
 
-    def __init__(self, x, y, player, ui):
+    def __init__(self, x, y, player):
         """
             Construct the Checker object
 
@@ -78,8 +77,6 @@ class Checker:
                 ordinate
             player : Player
                 the player
-            ui : int
-                the ui id
         """
 
         assert type(
@@ -87,14 +84,13 @@ class Checker:
         assert type(
             y) is int and y >= 0, "'y' must be an integer greater than 0"
         assert isinstance(player, Player), "'player' must be a Player"
-        assert type(ui) is int, "'ui' must be an integer"
 
         self.x = x
         self.y = y
         self.player = player
         self.state = State.NORMAL
         self.color = "#FFFFFF" if self.player.id == 1 else "#FF0000"
-        self.ui = ui
+        self.ui = None
         self.reachable_squares = []
         self.jumps = []
 

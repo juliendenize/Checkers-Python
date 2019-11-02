@@ -1,6 +1,7 @@
 from classes import Square, Checker, State, Player
 from view import BoardView
 import top_controller
+import numpy as np
 
 
 class Board:
@@ -55,11 +56,11 @@ class Board:
         self.players = [Player('black', 0), Player('white', 1)]
         self.turn = self.players[1]
         self.selected_checker = None
-        
+
         if isinstance(controller, top_controller.Controller):
             self.view = BoardView(self.controller.master)
             self.view.board.bind("<Button-1>", self.handle_canvas_click)
-        
+
         else:
             # it means the AI is using the board as an environment and doesnt require a view.
             # This variable helps to construct the board without actually displaying a UI.
@@ -67,8 +68,10 @@ class Board:
 
         self.create_squares()
         self.create_checkers()
-        self.compute_all_human_moves()
-        
+
+        if self.view is not None:
+            self.compute_all_human_moves()
+
         self.encodedBoards = [self.encode_board()]
 
     def encode_board(self):
@@ -79,23 +82,21 @@ class Board:
             ----------
             String: the board encoded
         """
-        code = ""
+        code = np.zeros((self.length, self.length))
         for x in range(self.length):
             for y in range(self.length):
                 if self.squares[(x, y)].checker:
                     checker = self.squares[(x, y)].checker
-                    if checker.player is self.players[0]:
+                    if checker.player is self.players[1]:
                         if checker.state is State.NORMAL:
-                            code += "B"
+                            code[x][y] = 1
                         elif checker.state is State.KING:
-                            code += "K"
+                            code[x][y] = 2
                     else:
                         if checker.state is State.NORMAL:
-                            code += "W"
+                            code[x][y] = -1
                         elif checker.state is State.KING:
-                            code += "Q"
-                else:
-                    code += "x"
+                            code[x][y] = -2
         return code
 
     def create_squares(self):
@@ -104,13 +105,11 @@ class Board:
         """
         for x in range(self.length):
             for y in range(self.length):
+                self.squares[(x, y)] = Square(x, y)
                 if self.view is not None:
-                    self.squares[(x, y)] = Square(
-                        x, y, self.view.create_square(x, y))
+                    self.view.create_square(x, y)
                     self.view.color_object(
                         self.squares[(x, y)].ui, self.squares[(x, y)].color)
-                else:
-                    self.squares[(x, y)] = Square(x, y, None)
 
     def create_checkers(self):
         """
@@ -127,12 +126,10 @@ class Board:
                 # Only some odd squares contain checkers
                 if (x + y) % 2:
                     self.players[player].checker_nb += 1
+                    checker = Checker(x, y, self.players[player])
                     if self.view is not None:
-                        checker = Checker(x, y, self.players[player],
-                                          self.view.create_checker(x, y))
+                        checker.ui = self.view.create_checker(x, y)
                         self.view.color_object(checker.ui, checker.color)
-                    else:
-                        checker = Checker(x, y, self.players[player], None)
                     self.checkers.append(checker)
                     self.squares[(x, y)].checker = checker
 
@@ -172,24 +169,24 @@ class Board:
                 if 0 <= x < self.length and 0 <= y < self.length:
                     # Check if the coordinates are forward if the checker is not a King
                     if (checker.state is not State.KING) and (self.players[0] is checker.player and y < checker.y or
-                       self.players[1] is checker.player and y > checker.y):
+                                                              self.players[1] is checker.player and y > checker.y):
                         continue
                     # if there is no checker on the adjacent square
                     if self.squares[(x, y)].checker is None:
                         checker.add_reachable_square(self.squares[(x, y)])
                     # if the checker on the square belongs to the other player
                     elif self.squares[(x, y)].checker is not None and \
-                         self.squares[(x, y)].checker.player is not checker.player:
+                            self.squares[(x, y)].checker.player is not checker.player:
                         if x > checker.x and x + 1 < self.length:
-                            if y > checker.y and y + 1 < self.length and self.squares[(x+1, y+1)].checker is None:
-                                checker.add_jump(self.squares[(x+1, y+1)])
-                            elif y < checker.y and y - 1 >= 0 and self.squares[(x+1, y-1)].checker is None:
-                                checker.add_jump(self.squares[(x+1, y-1)])
+                            if y > checker.y and y + 1 < self.length and self.squares[(x + 1, y + 1)].checker is None:
+                                checker.add_jump(self.squares[(x + 1, y + 1)])
+                            elif y < checker.y and y - 1 >= 0 and self.squares[(x + 1, y - 1)].checker is None:
+                                checker.add_jump(self.squares[(x + 1, y - 1)])
                         elif x < checker.x and x - 1 >= 0:
-                            if y > checker.y and y + 1 < self.length and self.squares[(x-1, y+1)].checker is None:
-                                checker.add_jump(self.squares[(x-1, y+1)])
-                            elif y < checker.y and y - 1 >= 0 and self.squares[(x-1, y-1)].checker is None:
-                                checker.add_jump(self.squares[(x-1, y-1)])
+                            if y > checker.y and y + 1 < self.length and self.squares[(x - 1, y + 1)].checker is None:
+                                checker.add_jump(self.squares[(x - 1, y + 1)])
+                            elif y < checker.y and y - 1 >= 0 and self.squares[(x - 1, y - 1)].checker is None:
+                                checker.add_jump(self.squares[(x - 1, y - 1)])
 
     def select_checker(self, x, y):
         """
@@ -212,7 +209,7 @@ class Board:
             raise KeyError(
                 'The key ' + str(x) + " " + str(y) + " is not in squares")
         if self.squares[(x, y)].checker is not None and self.squares[(x, y)].checker.player is self.turn and \
-           (not self.turn.must_attack or (self.turn.must_attack and self.squares[(x, y)].checker.jumps)):
+                (not self.turn.must_attack or (self.turn.must_attack and self.squares[(x, y)].checker.jumps)):
             checker = self.squares[(x, y)].checker
             if checker.player is self.turn:
                 self.selected_checker = checker
@@ -288,13 +285,13 @@ class Board:
 
         # kill the checker jumped
         if x < self.selected_checker.x and y < self.selected_checker.y:
-            killed_x, killed_y = x+1, y+1
+            killed_x, killed_y = x + 1, y + 1
         elif x < self.selected_checker.x and y > self.selected_checker.y:
-            killed_x, killed_y = x+1, y-1
+            killed_x, killed_y = x + 1, y - 1
         elif x > self.selected_checker.x and y < self.selected_checker.y:
-            killed_x, killed_y = x-1, y+1
+            killed_x, killed_y = x - 1, y + 1
         else:
-            killed_x, killed_y = x-1, y-1
+            killed_x, killed_y = x - 1, y - 1
         self.kill_checker(self.squares[killed_x, killed_y].checker)
         self.turn.last_jump_moves = 0
 
@@ -352,10 +349,19 @@ class Board:
         if not self.turn.checker_nb or self.turn.must_attack == -1:
             self.win(old_turn)
         else:
-            if len([i for i, code in enumerate(self.encodedBoards) if code == encoded_board]) > 2:
+            if len([i for i, previous_board in enumerate(self.encodedBoards[:-1])
+                    if self.compare_two_encoded_boards(previous_board, encoded_board)]) > 2:
                 self.draw(False)
-            elif old_turn.last_normal_piece_moved_moves >= 40 and self.turn.last_normal_piece_moved_moves >= 40 and old_turn.last_jump_moves and self.turn.last_jump_moves >= 40:
+            elif old_turn.last_normal_piece_moved_moves >= 40 and self.turn.last_normal_piece_moved_moves >= 40 and \
+                 old_turn.last_jump_moves and self.turn.last_jump_moves >= 40:
                 self.draw(True)
+
+    def compare_two_encoded_boards(self, board1, board2):
+        for x in range(self.length):
+            for y in range(self.length):
+                if board1[x][y] != board2[x][y]:
+                    return False
+        return True
 
     def win(self, player):
         """
@@ -379,7 +385,8 @@ class Board:
             Arguments
             ----------
             reason: boolean
-                The reason why it is a draw: 0 if the board was the same 3 times, 1 if no piece were killed or normal piece was moved for 40 round for each player
+                The reason why it is a draw: 0 if the board was the same 3 times, 1 if no piece were killed or normal
+                piece was moved for 40 round for each player
         """
         assert type(reason) is bool, "'reason' must be a boolean."
 
@@ -423,8 +430,9 @@ class Board:
         self.squares[(x, y)].checker = self.selected_checker
         self.squares[(old_x, old_y)].checker = None
         self.view.move_checker(self.selected_checker.ui, x, y)
-        self.turn.last_normal_piece_moved_moves = 0 if self.selected_checker.state is State.NORMAL else self.turn.last_normal_piece_moved_moves + 1
-        if y == 0 and self.turn is self.players[1] or y == self.length-1 and self.turn is self.players[0]:
+        self.turn.last_normal_piece_moved_moves = 0 if self.selected_checker.state is State.NORMAL \
+                                                    else self.turn.last_normal_piece_moved_moves + 1
+        if y == 0 and self.turn is self.players[1] or y == self.length - 1 and self.turn is self.players[0]:
             self.change_into_king()
             # When a piece becomes a king, the player can't play again
             self.turn.must_attack = 0
