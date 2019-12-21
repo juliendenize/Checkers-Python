@@ -63,9 +63,11 @@ class Checker:
             id of the checker for the board canvas
         reachable_squares : array(Squares)
             the squares reachable from this checker
+        id : int
+            id of the checker to identify itself
     """
 
-    def __init__(self, x, y, player):
+    def __init__(self, x, y, player, id):
         """
             Construct the Checker object
 
@@ -91,6 +93,7 @@ class Checker:
         self.state = State.NORMAL
         self.color = "#FFFFFF" if self.player.id == 1 else "#FF0000"
         self.ui = None
+        self.id = id
         self.reachable_squares = []
         self.jumps = []
 
@@ -188,6 +191,8 @@ class Player:
             number of moves since the player didn't move a normal piece
         last_jump_moves: int
             number of moves since the player didn't jump
+        checkers: list[Checkers]
+            list of the checkers belonging to this player
     """
 
     def __init__(self, name, id):
@@ -212,3 +217,4 @@ class Player:
         self.must_attack = 0
         self.last_normal_piece_moved_moves = 0
         self.last_jump_moves = 0
+        self.checkers=[]

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="da167d9f-9138-4975-bac5-0f70e5e5708b" name="Default Changelist" comment="">
+    <list default="true" id="aebee99a-c379-46e4-813a-03e128b90799" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/Checkers-Python.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Checkers-Python.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/checkers/ai.py" beforeDir="false" afterPath="$PROJECT_DIR$/checkers/ai.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/checkers/board.py" beforeDir="false" afterPath="$PROJECT_DIR$/checkers/board.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/checkers/classes.py" beforeDir="false" afterPath="$PROJECT_DIR$/checkers/classes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/checkers/top_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/checkers/top_controller.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,9 +19,8 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1SeN5RmPNrJDJjsoEuxnZAqezs7" />
+  <component name="ProjectId" id="1T441H5arJH3jwNXxos9q5Uwwfn" />
   <component name="PropertiesComponent">
-    <property name="full.screen.before.presentation.mode" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
@@ -68,11 +69,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="da167d9f-9138-4975-bac5-0f70e5e5708b" name="Default Changelist" comment="" />
-      <created>1571919917965</created>
+      <changelist id="aebee99a-c379-46e4-813a-03e128b90799" name="Default Changelist" comment="" />
+      <created>1572705816828</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1571919917965</updated>
+      <updated>1572705816828</updated>
     </task>
     <servers />
   </component>
