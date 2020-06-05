@@ -65,6 +65,8 @@ class Checker:
             the squares reachable from this checker
         id : int
             id of the checker to identify itself
+        in_danger: boolean
+            True if the checker is killable
     """
 
     def __init__(self, x, y, player, id):
@@ -96,6 +98,7 @@ class Checker:
         self.id = id
         self.reachable_squares = []
         self.jumps = []
+        self.in_danger = False
 
     def reset_reachable_squares(self):
         """
@@ -125,7 +128,7 @@ class Checker:
 
     def add_jump(self, square):
         """
-            Add a reachable square
+            Add a reachable square by jump
 
             Parameters
             ----------
@@ -142,8 +145,12 @@ class Checker:
         """
             Kill this checker
         """
-        self.state = State.DEAD
         self.player.checker_nb -= 1
+        if self.state == State.KING:
+            self.player.king_nb -= 1
+
+        self.state = State.DEAD
+        
 
 
 class State(Enum):
@@ -168,6 +175,31 @@ class State(Enum):
     DEAD = 3
 
 
+class GameState(Enum):
+    """
+        Represent a game state object for board
+
+        Extends
+        ----------
+        Enum
+
+        Values
+        ----------
+        IN_PROGRESS:
+            game in progress    
+        DRAW:
+            draw
+        WIN_WHITE:
+            win for white side
+        WIN_BLACK:
+            win for back side
+    """
+    IN_PROGRESS = 0
+    DRAW        = 1
+    WIN_WHITE   = 2
+    WIN_BLACK   = 3
+
+
 class Player:
     """
         Represent a player object
@@ -180,6 +212,8 @@ class Player:
                 the id of the player (0 or 1)
         time: Time
             the time the player played
+        ai: boolean
+            true if the player is an ai
         checker_nb: int
             the number of checkers alive
         must_attack: int
@@ -210,11 +244,32 @@ class Player:
         assert type(name) is str, "'name' must be a string"
         assert type(id) is int, "'id' must be an integer"
 
-        self.name = name
-        self.time = 0
-        self.id = id
-        self.checker_nb = 0
+        self.name        = name
+        self.time        = 0
+        self.id          = id
+        self.checker_nb  = 0
+        self.king_nb     = 0
         self.must_attack = 0
+        
         self.last_normal_piece_moved_moves = 0
         self.last_jump_moves = 0
-        self.checkers=[]
+        
+        self.checkers  = []
+        self.ai        = False
+        self.killables = []
+        self.killable_kings   = 0
+        self.killable_normals = 0
+    
+    def reset_killable(self):
+        self.killables        = []
+        self.killable_kings   = 0
+        self.killable_normals = 0
+    
+    def add_killable(self, checker):
+        if checker not in killables:
+            self.killables += checker
+            if checker.state == State.KING:
+                self.killable_kings += 1
+            else:
+                self.killable_normals += 1
+        return
